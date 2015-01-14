@@ -163,7 +163,7 @@ if __name__ == "__main__":
         debug(txout)
         
         # Add all .po files tx pull got to repo
-        paths, files = zip(*re.findall(r"^\s->\s[\w_]+:\s([\w/\_]+/([\w_]+\.ts))$", txout, flags=re.MULTILINE))
+        paths, files = zip(*re.findall(r"^(?!en\.po)\s->\s[\w]+:\srepositories/transifex-etlegacy/([\w/]+/([\w]+\.po))$", txout, flags=re.MULTILINE))
         debug(git["add"](*paths))
                
         # Check if the repo changed
