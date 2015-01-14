@@ -115,13 +115,7 @@ if __name__ == "__main__":
     pr_title = cfg.get('pullrequest', 'title')
     pr_body = cfg.get('pullrequest', 'body')
     pr_commit = cfg.get('pullrequest', 'commit')
-    
-    prifile = cfg.get('misc', 'prifile')
-    pritemplate = cfg.get('misc', 'pritemplate')
-    qrcfile = cfg.get('misc', 'qrcfile')
-    qrctemplate = cfg.get('misc', 'qrctemplate')
-    additionaltsfiles = cfg.get('misc', 'additionaltsfiles')
-    
+     
     if args.setup or not os.path.exists(wr_path):
         info("Setting up git repo")
         debug(git["clone", wr_url, wr_path]())
@@ -168,32 +162,10 @@ if __name__ == "__main__":
         txout = tx["pull", "-f", "-a", "--mode=" + mode, "--minimum-perc=" + minpercent]()
         debug(txout)
         
-        # Add all .ts files tx pull got to repo
+        # Add all .po files tx pull got to repo
         paths, files = zip(*re.findall(r"^\s->\s[\w_]+:\s([\w/\_]+/([\w_]+\.ts))$", txout, flags=re.MULTILINE))
         debug(git["add"](*paths))
-        
-        # Add additional ts files not in control of transifex (e.g. English source translation)
-        files = list(files)
-        files.extend(additionaltsfiles.split(" "))
-        files.sort()
-        
-        # Write pri file listing ts files for build
-        prifilepath = os.path.join(wr_path, prifile)
-        info("Updating translations listing file '%s'", prifilepath)
-        tsfiles = (" ".join(files))
-        with open(prifilepath, "w") as f:
-            f.write(pritemplate % {'files': tsfiles})
-        debug(git["add"](prifilepath))
-        
-        # Write qrc file listing qm files built from ts files for build
-        qrcfilepath = os.path.join(wr_path, qrcfile)
-        info("Updating translations listing file '%s'", qrcfilepath)
-        tstoqm = lambda f: " <file>%s</file>" % re.sub(r"(^.*)\.ts$", r"\1.qm", f)
-        qmfiles = os.linesep.join([tstoqm(f) for f in files])
-        with open(qrcfilepath, "w") as f:
-            f.write(qrctemplate % {'files': qmfiles})
-        debug(git["add"](qrcfilepath))
-
+               
         # Check if the repo changed
         debug("Checking for modifications")
         changed, changedfiles, _ = git["diff", "--cached", "--name-only", "--exit-code"].run(retcode=(0,1))
